@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reliable Lenis Smooth Scrolling</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    section {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      font-size: 2rem;
+      scroll-margin-top: 60px;
+    }
+    
+    section:nth-child(1) { background-color: #f8d7da; }
+    section:nth-child(2) { background-color: #d1ecf1; }
+    section:nth-child(3) { background-color: #d4edda; }
+    section:nth-child(4) { background-color: #fff3cd; }
+    
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    nav a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+    }
+    
+    nav a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#section1">Section 1</a>
+    <a href="#section2">Section 2</a>
+    <a href="#section3">Section 3</a>
+    <a href="#section4">Section 4</a>
+  </nav>
+  
+  <section id="section1">Section 1</section>
+  <section id="section2">Section 2</section>
+  <section id="section3">Section 3</section>
+  <section id="section4">Section 4</section>
+
+  <!-- Load Lenis directly from unpkg which is very reliable -->
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.19/dist/lenis.min.js"></script>
+  
+  <script>
+    // Function to check if Lenis loaded properly and initialize
+    function initializeLenis() {
+      console.log("Checking for Lenis...", typeof window.Lenis);
+      
+      // Check if Lenis is available in the global scope
+      if (typeof window.Lenis === 'undefined') {
+        console.error('Lenis library not loaded properly. Retrying in 1 second...');
+        setTimeout(initializeLenis, 1000); // Retry after 1 second
+        return;
+      }
+      
+      console.log("Lenis found! Initializing...");
+      
+      // Initialize Lenis
+      const lenis = new window.Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        direction: 'vertical',
+        smooth: true,
+        smoothTouch: false,
+        touchMultiplier: 2
+      });
+      
+      console.log("Lenis instance created:", lenis);
+      
+      // Get all navigation links
+      const links = document.querySelectorAll('nav a');
+      
+      // Add click handlers for smooth scrolling to sections
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          console.log("Scrolling to:", link.getAttribute('href'));
+          const target = document.querySelector(link.getAttribute('href'));
+          lenis.scrollTo(target);
+        });
+      });
+      
+      // Set up the animation frame loop
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      
+      // Start the animation loop
+      requestAnimationFrame(raf);
+      
+      console.log('Lenis initialized successfully');
+    }
+    
+    // Wait for window to fully load
+    window.addEventListener('load', () => {
+      console.log("Window loaded, preparing to initialize Lenis");
+      // Give a small delay to ensure everything is ready
+      setTimeout(initializeLenis, 500);
+    });
+  </script>
+</body>
+</html>
